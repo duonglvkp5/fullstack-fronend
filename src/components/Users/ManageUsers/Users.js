@@ -4,13 +4,22 @@ import { fetchAllUser, deleteUser } from "../../../services/userService";
 import ReactPaginate from 'react-paginate';
 import { toast } from 'react-toastify';
 import ModalDelete from './ModalDelete';
+import ModalUser from './ModalUser';
+
 const Users = (props) => {
     const [listUsers, setListUsers] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [currentLimit, setCurrentLimit] = useState(5);
     const [totalPages, setTotalPages] = useState(0);
     const [isShowModalDelete, setIsShowModalDelete] = useState(false);
+    //modal delete
     const [dataModal, setDataModal] = useState({});
+    const [isShowModalUser, setIsShowModalUser] = useState(false);
+    const [actionModalUser, setActionModalUser] = useState("CREATE");
+    //modal update
+    const [dataModalUser, setDataModalUser] = useState({});
+
+
 
     useEffect(() => {
         fetchUsers();
@@ -44,15 +53,35 @@ const Users = (props) => {
             toast.error(response.data.EM);
         }
     }
+    const onHideModalUser = async () => {
+        setIsShowModalUser(false);
+        setDataModalUser({});
+        await fetchUsers();
+    }
+    const handleEditUser = (user) => {
+        setActionModalUser("UPDATE");
+        setDataModalUser(user);
+        setIsShowModalUser(true);
+    }
+    const handleRefresh = async () => {
+        await fetchUsers();
+    }
     return (
         <>
             <div className='container'>
                 <div className='manage-users-container'>
                     <div className='user-header'>
-                        <div className='title'><h3>Table Users</h3></div>
-                        <div className='actions'>
-                            <button className='btn btn-success'>Refesh</button>
-                            <button className='btn btn-primary'>Add new user</button>
+                        <div className='title mt-3'><h3>Manage Users</h3></div>
+                        <div className='actions my-3'>
+                            <button className='btn btn-success refresh'
+                                onClick={() => handleRefresh()}>
+                                <i className='fa fa-refresh'></i>Refresh
+                            </button>
+                            <button className='btn btn-primary'
+                                onClick={() => {
+                                    setIsShowModalUser(true);
+                                    setActionModalUser("CREATE")
+                                }}><i className='fa fa-plus-circle'></i>Add new user</button>
                         </div>
                     </div>
                     <div className='user-body'>
@@ -73,15 +102,25 @@ const Users = (props) => {
                                         {listUsers.map((item, index) => {
                                             return (
                                                 <tr key={`row-${index}`}>
-                                                    <th>{index + 1}</th>
+                                                    <th>{(currentPage - 1) * currentLimit + index + 1}</th>
                                                     <td>{item.id}</td>
                                                     <td>{item.email}</td>
                                                     <td>{item.username}</td>
                                                     <td>{item.Group ? item.Group.name : ''}</td>
                                                     <td>
-                                                        <button className='btn btn-warning mx-3'>Edit</button>
-                                                        <button className='btn btn-danger'
-                                                            onClick={() => handleDeleteUser(item)}>Delete</button>
+                                                        <span
+                                                            title='Edit'
+                                                            className='edit'
+                                                            onClick={() => handleEditUser(item)}
+                                                        >
+                                                            <i className='fa fa-pencil'></i>
+                                                        </span>
+                                                        <span
+                                                            title='Delete'
+                                                            className='delete'
+                                                            onClick={() => handleDeleteUser(item)}>
+                                                            <i className='fa fa-trash-o'></i>
+                                                        </span>
                                                     </td>
                                                 </tr>
                                             )
@@ -107,7 +146,7 @@ const Users = (props) => {
                         </div>
                     }
                 </div>
-            </div>
+            </div >
 
             <ModalDelete
                 show={isShowModalDelete}
@@ -115,6 +154,11 @@ const Users = (props) => {
                 confirmDeleteUser={confirmDeleteUser}
                 dataModal={dataModal}
             />
+            <ModalUser
+                onHide={onHideModalUser}
+                show={isShowModalUser}
+                action={actionModalUser}
+                dataModalUser={dataModalUser} />
         </>
     );
 }

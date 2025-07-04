@@ -15,7 +15,7 @@ const Login = (props) => {
         isValidValueLogin: true,
         isValidPassword: true
     }
-    const [objValidInput, setObjValidInput] = useState("");
+    const [objValidInput, setObjValidInput] = useState(defaultObjValidInput);
 
     const handleCreateNewAccount = () => {
         history.push('/register');
